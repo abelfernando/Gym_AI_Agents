@@ -26,29 +26,48 @@ Para resolver o gargalo sem perder qualidade, a proposta é construir uma soluç
    cd Gym_AI_Agents
    ```
 
-2. **Instale o Node.js 18+**
-   - O n8n local depende de Node.js na versão 18 ou superior.
+2. **Escolha como executar o n8n**
+   - **Opção A — Local com Node.js 18+**
+     ```bash
+     npx n8n
+     ```
+     - Acesse: `http://localhost:5678`
+   - **Opção B — Local com Docker**
+     ```bash
+     docker run -it --rm --name n8n -p 5678:5678 -v n8n_data:/home/node/.n8n docker.n8n.io/n8nio/n8n
+     ```
+     - Acesse: `http://localhost:5678`
+   - **Opção C — n8n Cloud**
+     - Use uma instância no serviço gerenciado do n8n Cloud.
+   - **Opção D — n8n na AWS**
+     - Use uma implantação self-hosted do n8n em infraestrutura AWS.
 
-3. **Suba o n8n localmente**
-   ```bash
-   npx n8n
-   ```
-   - Acesse: `http://localhost:5678`
-
-4. **Importe o workflow do projeto no n8n**
+3. **Importe o workflow do projeto no n8n**
    - Use o arquivo: `Gym AI Agents.json`
 
-5. **Configure as credenciais necessárias no n8n**
+4. **Configure as credenciais necessárias no n8n**
    - Gmail (OAuth)
    - Google Drive
    - OpenAI
    - Supabase
 
-6. **Prepare a base de conhecimento para o RAG**
+5. **Prepare a base de conhecimento para o RAG**
    - Garanta o uso dos documentos da pasta `Documentos`:
      - `Planos e Preços MoveMais.pdf`
      - `Protocolos de Treino MoveMais.pdf`
      - `Guia Nutricional MoveMais.pdf`
+
+6. **Prepare a planilha de cadastro de clientes no Google Drive**
+   - Crie uma planilha nova no Google Drive **ou** faça upload da cópia existente em `Cadastro clientes/Cadastro de clientes.xlsx`.
+   - Os nomes dos campos devem ser **exatamente iguais** aos da planilha do projeto:
+     - `Nome`
+     - `E-mail`
+     - `Idade`
+     - `Plano`
+     - `Modalidade`
+     - `Serviços Adicionais`
+     - `Status do plano`
+     - `Data de vencimento`
 
 7. **Teste o fluxo de ponta a ponta**
    - Envie e-mails de teste para validar o roteamento entre os cinco agentes e as respostas geradas.
