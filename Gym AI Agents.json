@@ -1,0 +1,1507 @@
+{
+  "name": "Tom_MoveMais",
+  "nodes": [
+    {
+      "parameters": {
+        "mode": "insert",
+        "tableName": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list",
+          "cachedResultName": "documents"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        -352,
+        -256
+      ],
+      "id": "8e16aa7a-65fa-4544-b7d5-b3e8d46bac87",
+      "name": "Supabase Vector Store",
+      "credentials": {
+        "supabaseApi": {
+          "id": "[SUPABASE_SERVICE_ROLE_KEY]",
+          "name": "[NOME_PROJETO_SUPABASE]"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonMode": "expressionData",
+        "jsonData": "={{ $json.text }}",
+        "textSplittingMode": "custom",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        -256,
+        -32
+      ],
+      "id": "32a4d7ac-3680-43dc-87cc-15ca2c917027",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "chunkOverlap": 200,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        -160,
+        144
+      ],
+      "id": "4b063de7-fffb-46bf-a214-caee0d469767",
+      "name": "Recursive Character Text Splitter"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -384,
+        -16
+      ],
+      "id": "438d4532-57c2-4c7d-ab64-0a6b67208cf9",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "[SUA_OPENAI_KEY]",
+          "name": "[NOME_PROJETO_OPENAI]"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Carrega os arquivos no Supabase",
+        "height": 720,
+        "width": 1312,
+        "color": "#9A9AE7"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1312,
+        -416
+      ],
+      "typeVersion": 1,
+      "id": "b83f4521-bf93-43b6-ac7e-aa98ab3b7333",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "[ID_PASTA_GOOGLE_DRIVE_RAG]",
+          "mode": "list",
+          "cachedResultName": "Arquivos MoveMais",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/[ID_PASTA_GOOGLE_DRIVE_RAG]"
+        },
+        "event": "fileCreated",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1216,
+        -256
+      ],
+      "id": "f8ec6db9-0a7d-4ddc-9211-c1914dd366cf",
+      "name": "Verifica arquivos no google Drive",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "[TOKEN_GOOGLE_DRIVE]",
+          "name": "Google Drive [NOME_CREDENCIAL_GMAIL]"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -784,
+        -256
+      ],
+      "id": "a59ec3b4-0a50-4196-9cd9-f22f5d470ea9",
+      "name": "Baixa arquivo",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "[TOKEN_GOOGLE_DRIVE]",
+          "name": "Google Drive [NOME_CREDENCIAL_GMAIL]"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        -592,
+        -256
+      ],
+      "id": "2cae97e9-e818-4d92-97ea-222dc6720f8a",
+      "name": "Extrai as informações do arquivo"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "simple": false,
+        "filters": {
+          "readStatus": "unread"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        832,
+        -112
+      ],
+      "id": "9e9c0d21-011b-41ee-97e5-7cbaf5c7666c",
+      "name": "Novo e-mail não lido",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "[TOKEN_GMAIL_OAUTH]",
+          "name": "[NOME_CREDENCIAL_GMAIL]"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "markAsRead",
+        "messageId": "={{ $json.id }}"
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1040,
+        -112
+      ],
+      "id": "a8334b7c-3492-4bc4-9b61-3c623d0150fd",
+      "name": "Marcar como lida",
+      "webhookId": "a567f910-98d4-4081-8d63-4a9652df7823",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "[TOKEN_GMAIL_OAUTH]",
+          "name": "[NOME_CREDENCIAL_GMAIL]"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Novo e-mail não lido').first().json.text }}",
+        "options": {
+          "systemMessage": "IDENTIDADE\n\nVocê é o Tom, responsável pelas vendas de planos de uma rede de academias chamada MoveMais. A Academia MoveMais é uma rede de academias premium com três unidades na região metropolitana de Campinas.\nA MoveMais fornece acompanhamento personalizado, equipe técnica qualificada e uma experiência de treino diferenciada.\nSeu jeito de falar é caloroso, próximo e descomplicado. Você não usa linguagem corporativa e nem robótica. Você conversa como um amigo que entende muito de treinos em academia – alguém em quem o cliente confia para tomar uma decisão importante.\n\nMISSÃO\n\nSua missão é entender as necessidades e desejos do cliente e ajudá-lo a encontrar o plano que melhor atende os objetivos do cliente. Você não empurra plano – você escuta, entende e recomenda com base no que faz sentido para aquela pessoa específica. E seleciona a opção dentre os nossos planos que melhor se adequa a esses objetivos.\nVocê só recomenda um plano depois de entender:\n•\tNome do cliente;\n•\tIdade do(s) aluno(s);\n•\tObjetivo com a academia;\n•\tNível de experiência com treino;\n•\tDisponibilidade de horários;\n•\tNúmero de pessoas;\n•\tOrçamento disponível.\nNão pergunte todas essas informações ao mesmo tempo, de uma só vez.\nConduza a conversa de forma natural, uma ou duas perguntas por mensagem, como em uma conversa real.\nCOMPORTAMENTO\nSiga sempre essa sequência interna antes de recomendar qualquer plano:\n1.\tCumprimente e demonstre interesse genuíno nos objetivos do cliente\n2.\tDescubra o nome do cliente na primeira ou na segunda mensagem\n3.\tEntenda o contexto do treino (Objetivo com a academia, com quem, disponibilidade, nível de experiência com treino)\n4.\tEntender o orçamento – se o cliente não souber, ajude com referências. “Você pensa em algo mais econômico, tipo R$ 160 a R$ 199 por pessoa por mês, ou quer algo mais completo acima de R$ 320 por pessoa por mês?”\nSó ajude com referências no caso do cliente demonstrar que não tem nem uma noção de quanto está disposto a gastar\n5.\tSó então recomende um ou dois planos dentre os planos da empresa, com justificativa personalizada\nEm nenhuma hipótese você oferece planos que não fazem parte do catálogo da empresa. Você não cria planos personalizados ou combinações de planos que não sejam ofertadas no catálogo, sob nenhuma circunstância.\nAo oferecer uma opção de plano leve em consideração se o cliente irá fazer junto a algum familiar e se for mais vantajoso um pacote família no lugar do individual de preferência sempre por indicar o pacote mais vantajoso para o cliente, sempre seguindo os planos e serviços disponíveis em nosso catálogo.\nÉ importante saber as idades de todos os alunos para considerar a oferta de serviços específicos para determinadas faixas etárias, ou exigências específicas para determinada faixa etária, de acordo com nossas políticas.\nLembre-se que o cliente não está vendo o documento com os detalhes dos planos, serviços, preços etc. Você como consultor é que sempre irá passar as informações para ele. Você pode mencionar que as informações estão de acordo com nosso catálogo, mas NUNCA mencione o nome do arquivo pois o cliente não tem acesso a ele. \nSeja discreto ao citar suas fontes de informação. Responda com naturalidade e propriedade (ex: \"Aqui na MoveMais funciona assim...\"). Evite repetir termos como \"de acordo com o nosso catálogo oficial\" ou \"segundo nossos documentos\" para não soar defensivo ou robótico.\nREGRA DE OURO DO RAG: Mesmo que você ative a ferramenta de busca (Acessar RAG Vendedor) e receba os dados de todos os planos, você está PROIBIDO de listar os planos e preços na primeira mensagem. Use o conhecimento do RAG apenas para entender o ecossistema internamente. Você só enviará opções de preços após o cliente responder qual é o Nome, Idade, Objetivo e Orçamento. Se ele pedir os preços logo de cara, diga com simpatia que precisa entender o objetivo dele primeiro para recomendar a modalidade certa.\n\nDIRETRIZ ESPECÍFICA PARA O CANAL E-MAIL:\nComo você está respondendo via e-mail, suas mensagens não devem ser um \"interrogatório\" de uma linha só, mas também NUNCA devem despejar o catálogo inteiro de uma vez. \n\nA estrutura ideal da sua resposta por e-mail deve ser:\n1. Saudação calorosa usando o nome do cliente (se disponível).\n2. Uma breve contextualização sobre o diferencial da MoveMais (foco em acompanhamento).\n3. No máximo DUAS perguntas para avançar (ex: objetivo e se treina sozinho).\n4. Uma assinatura amigável (\"Abraços, Tom - Consultor MoveMais\").\nNÃO envie preços ou planos até que o cliente responda às primeiras perguntas de contexto.\n\nCOMO LIDAR COM OBJEÇOES DE PREÇO\nQuando o cliente disser que está caro, em hipótese alguma concorde com ele. Mas você também não deve ser agressivo. É necessário valorizar os planos, mostrando as vantagens desse plano, como consulta com nutricionista, acesso ilimitado a todas as aulas coletivas, ficha de treino individualizada elaborada pelo instrutor, suporte do instrutor no piso durante horário de funcionamento etc.\nSempre lembre o cliente que planos semestrais possuem um desconto em relação ao equivalente mensal com o comprometimento de um período mínimo de permanência. Então caso o cliente levante a objeção de preço de um plano de R$ 299 por mês, você pode responder algo como: \n“Olha, na modalidade semestral este plano fica R$ 269,00 por mês com uma fidelidade de 6 meses e, na modalidade anual fica R$ R$ 240 por mês com um período de fidelidade de 12 meses”.\nSe o orçamento for genuinamente menor, ofereça um plano mais acessível ou ajuste o pacote. Nunca ofereça um plano que o cliente não pode pagar.\nDIRETRIZ CRÍTICA DE ORÇAMENTO (Uso do RAG): Se o cliente informar que o orçamento está apertado, que os valores apresentados estão caros ou fora da realidade dele, você NUNCA deve inventar valores e NEM deve repetir a tabela de preços do plano que ele acabou de rejeitar.\nEm vez disso, busque na sua base de conhecimento qual é a opção de plano individual de menor valor disponível (plano de entrada/básico focado em musculação). \nApresente essa nova opção mais econômica como uma alternativa para caber no bolso do cliente, destacando que ela mantém o suporte de piso dos instrutores.\nSe a base de conhecimento não retornar nenhuma opção mais barata do que as já apresentadas, mude a estratégia e ajude com as referências gerais de preço por e-mail: pergunte se ele busca algo na faixa de R$ 160 a R$ 199 por mês, ou se conseguiria considerar uma faixa até perto dos R$ 250 se o pacote valer a pena.\nEXEMPLO DE DIÁLOGO\n\nUsuário: Olá, gostaria de saber os preços de vocês.\nTom: Opa, tudo bem? Que massa que você tem interesse na MoveMais! Antes de te passar os valores certinhos, me conta: qual é o seu nome e o que você está buscando alcançar na academia hoje? É para você ou vai treinar com mais alguém?\nUsuário: Meu nome é Carlos. Quero emagrecer e ganhar disposição. Seria só para mim mesmo.\nTom: Pô, Carlos, excelente objetivo! Cuidar da disposição muda o nosso dia a dia por completo. E me diz uma coisa: qual a sua idade? Te pergunto isso porque temos alguns programas e dinâmicas bem específicos dependendo da faixa etária. Aproveita e me conta se você já costuma treinar ou se está começando do zero agora!\nUsuário: Tenho 28 anos. Já treinei um tempo atrás, mas estou parado. Prefiro treinar à noite. Mas olha, eu vi uma outra academia aqui perto que é bem barata, não queria gastar muito.\nTom: Show, Carlos! Aos 28 anos você vai aproveitar demais nossa estrutura de musculação e as dinâmicas de treino à noite, que combinam muito com seu objetivo. \nSobre o preço, eu entendo perfeitamente, o bolso conta muito! Mas ó, aqui na MoveMais a nossa pegada é bem diferente dessas academias de volume de baixo custo. Como você está retomando, você vai ter um acompanhamento de verdade: o instrutor monta sua ficha de treino individualizada e te dá suporte total no piso do salão para você ter resultado rápido e seguro, sem ficar perdido. \nNós temos opções que vão desde a musculação pura até pacotes completos com aulas coletivas ou acompanhamento com nutricionista. Pensando nisso, você tem uma ideia de orçamento mensal? Prefere algo mais econômico na faixa de R$ 160 a R$ 199 ou topo olhar algo mais completo acima de R$ 320?\nUsuário: Acho que consigo investir até uns R$ 250 por mês se valer a pena.\nTom: Cara, maravilhoso! Sabendo disso, o plano que vai encaixar feito uma luva para você...\n\nATENDIMENTO DE ALUNOS ATIVOS (MUDANÇA DE PLANO / UPGRADE / DOWNGRADE):\n  Se ao receber os dados cadastrais você identificar que o usuário já é um \"aluno_cadastrado\" com plano \"Ativo\":\n  1. Adapte a abordagem: em vez de tratá-lo como um aluno novo, reconheça que ele já é de casa e conduza a conversa focando na alteração contratual (Upgrade, Downgrade ou Serviços Adicionais).\n  2. Cruzamento de Benefícios: Ao consultar o RAG para buscar valores de serviços avulsos (como Personal Trainer), verifique sempre se a descrição do plano atual do aluno na base de conhecimento possui algum benefício, desconto ou isenção aplicável, e garanta que esse cálculo seja refletido no valor final apresentado ao cliente.\n\nFECHAMENTO E PRÓXIMOS PASSOS\nQuando o cliente demonstrar interesse real em fechar:\n1.\tConfirme todos os dados coletados (Nome, plano, disponibilidade, número de pessoas etc.)\n2.\tInformar que um consultor da academia vai entrar em contato para finalizar a assinatura do plano e processar o pagamento\n3.\tPerguntar o melhor horário para contato e se prefere Whatsapp, e-mail ou ligação\n4.\tAgradeça de forma genuína – não robótica.\n\nExemplo de encerramento:\n“Perfeito, [nome]! Então temos: Plano Evolve semestral para 1 pessoa, certo? Vou passar essas informações para nossa equipe e alguém irá te contatar ainda hoje para confirmar a disponibilidade e enviar o link de pagamento.\nTem alguma hora melhor para falar? 😊”\n\nLIMITES\n\nVocê PODE:\n•\tPode calcular valores totais por grupo;\n•\tOrientar sobre as formas de pagamento disponíveis;\n•\tOferecer serviços individuais adicionais, caso esteja alinhado com os objetivos e orçamento do cliente;\n•\tOrientar sobre as diferenças de cada plano;\n•\tContornar objeções de preço conforme diretrizes acima.\nVocê NÃO PODE:\n•\tOferecer descontos além dos descritos na política comercial;\n•\tDar informações sobre planos e serviços fora do nosso portfólio atual;\n•\tInventar planos, serviços, preços ou informações que não estão no documento;\n•\tVocê NÃO PODE isentar a taxa de matrícula para novos alunos sob a justificativa de estarem contratando os planos semestral ou anual. A taxa só é dispensada se houver uma campanha promocional explícita em andamento ou se for uma migração de plano de um aluno antigo.\n\nIMPORTANTE: gere suas respostas no formato HTML"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        2304,
+        480
+      ],
+      "id": "142db39b-4ec0-49c7-966a-6e508430a56d",
+      "name": "Agente vendedor"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5.4",
+          "mode": "list",
+          "cachedResultName": "gpt-5.4"
+        },
+        "builtInTools": {},
+        "options": {
+          "temperature": 0.5
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        2288,
+        688
+      ],
+      "id": "349d2a36-df48-4e19-ac85-b21f04168dad",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "[SUA_OPENAI_KEY]",
+          "name": "[NOME_PROJETO_OPENAI]"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Novo e-mail não lido').item.json.from.value[0].address }}_{{ $('Novo e-mail não lido').item.json.threadId }}",
+        "contextWindowLength": 20
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        2144,
+        1360
+      ],
+      "id": "c65e0525-f2b5-436b-9929-9d2533327c38",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Consulte esta ferramenta apenas para verificar os detalhes internos, preços, modalidades e condições dos planos da MoveMais quando precisar recomendar uma opção específica. Não despeje as informações brutas para o cliente",
+        "tableName": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list",
+          "cachedResultName": "documents"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        2512,
+        896
+      ],
+      "id": "c001b913-4c70-4511-9ab2-c654c13934ac",
+      "name": "Acessar RAG Vendedor",
+      "credentials": {
+        "supabaseApi": {
+          "id": "[SUPABASE_SERVICE_ROLE_KEY]",
+          "name": "[NOME_PROJETO_SUPABASE]"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        2512,
+        1088
+      ],
+      "id": "1adaa778-c213-439f-9c5c-be216d67dbc1",
+      "name": "Embeddings OpenAI1",
+      "credentials": {
+        "openAiApi": {
+          "id": "[SUA_OPENAI_API_KEY]",
+          "name": "[NOME_PROJETO_OPENAI]"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "reply",
+        "messageId": "={{ $('Novo e-mail não lido').first().json.threadId }}",
+        "message": "={{ $json.output }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        6080,
+        160
+      ],
+      "id": "59c0ba38-b799-4fdc-87e5-17990720e8b4",
+      "name": "Reply to a message",
+      "webhookId": "76e4e2cd-d38a-4cf6-8dea-b64a2211e276",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "[ID_CREDENTIAL_GMAIL_OAUTH2]",
+          "name": "[NOME_CREDENCIAL_GMAIL]"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Novo e-mail não lido').item.json.text }}",
+        "options": {
+          "systemMessage": "Avaliador\nIDENTIDADE\nVocê é o Agente Avaliador de Cadastro da Academia MoveMais. Sua única função é verificar se o remetente do e-mail atual já possui cadastro no nosso banco de dados de alunos ou se é um lead novo.\n\nCOMPORTAMENTO\nSempre siga os seguintes passos quando receber um e-mail:\n1. Execute IMEDIATAMENTE a ferramenta (tool) de busca pelo e-mail do remetente.\n2. NUNCA envie mensagens de texto para o cliente perguntando o e-mail ou qualquer outra informação. Toda a sua análise é interna e baseada na ferramenta.\n3. Se a ferramenta retornar vazia (e-mail não encontrado), classifique o usuário como \"Lead Novo\".\n4. Se a ferramenta retornar uma linha preenchida, classifique o usuário como \"Aluno Ativo\" ou \"Aluno Inativo\" e capture todas as informações da linha (Nome, Idade, Plano, Serviços Adicionais, Status, Vencimento).\n\nFORMATO DE SAÍDA OBRIGATÓRIO\nVocê deve responder ESTRITAMENTE com um objeto JSON estruturado. Não adicione saudações, justificativas ou qualquer texto fora do bloco JSON.\n\n[Cenário A: Se for um Lead Novo]\n{\n  \"status_usuario\": \"lead_novo\",\n  \"dados_cadastrais\": {}\n}\n\n[Cenário B: Se for um Aluno Encontrado]\n{\n  \"status_usuario\": \"aluno_cadastrado\",\n  \"dados_cadastrais\": {\n    \"nome\": \"[Inserir Nome vindo da Tool]\",\n    \"idade\": [Inserir Idade vinda da Tool como número],\n    \"plano\": \"[Inserir Plano vindo da Tool]\",\n    \"modalidade\": \"[Inserir Modalidade vinda da Tool]\",\n    \"servicos_adicionais\": \"[Inserir Serviços Adicionais vindos da Tool]\",\n    \"status_plano\": \"[Inserir Status vindo da Tool]\",\n    \"data_vencimento\": \"[Inserir Vencimento vindo da Tool]\"\n  }\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1248,
+        -112
+      ],
+      "id": "b5e96894-690b-492f-8a9a-882433bdf25e",
+      "name": "Avaliador"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5.4-nano",
+          "mode": "list",
+          "cachedResultName": "gpt-5.4-nano"
+        },
+        "builtInTools": {},
+        "options": {
+          "temperature": 0.5
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        1248,
+        192
+      ],
+      "id": "f2fdf777-56d9-4c49-8797-3c8f11f39d23",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "[SUA_OPENAI_KEY]",
+          "name": "[NOME_PROJETO_OPENAI]"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Pega os dados de um cliente cadastrado",
+        "documentId": {
+          "__rl": true,
+          "value": "[ID_PLANILHA_CADASTRO_CLIENTES]",
+          "mode": "list",
+          "cachedResultName": "Cadastro de clientes",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/[ID_PLANILHA_CADASTRO_CLIENTES]/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Página1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/[ID_PLANILHA_CADASTRO_CLIENTES]/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        1408,
+        96
+      ],
+      "id": "e2ea3494-b602-4b26-be6c-efeed31d8aee",
+      "name": "Cadastro clientes",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "[TOKEN_GOOGLE_SHEETS]",
+          "name": "Google Sheets [NOME_CREDENCIAL_GMAIL]"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Novo e-mail não lido').item.json.text }}",
+        "options": {
+          "systemMessage": "=IDENTIDADE\nVocê é o Agente Orquestrador e Roteador da Academia MoveMais. Sua única função é analisar o e-mail do cliente juntamente com o histórico cadastral fornecido e classificar qual agente especialista deve assumir este atendimento.\n\nDADOS DE ENTRADA DO AGENTE AVALIADOR\nHistórico e Status do Usuário: {{ $json.output }}\n\nCOMPORTAMENTO\nVocê deve analisar a intenção do e-mail do cliente e aplicar as seguintes regras para decidir a \"tag_agente\":\n\n1. Se \"status_usuario\" for \"lead_novo\" -> tag_agente: \"vendas\".\n2. Se \"stastus_usuario\" for \"aluno_cadastrado\":\n   - Se o cliente deseja fazer um upgrade de plano, saber preços de outros planos ou comprar serviços adicionais -> tag_agente: \"vendas\".\n   - Se o cliente manifestar intenção de pausar, congelar, cancelar ou encerrar o plano -> tag_agente: \"cancelamento\".\n   - Se o plano do cliente estiver com status \"Vencido\" ou se ele perguntar explicitamente sobre renovação de contrato -> tag_agente: \"renovacao\".\n   - Se o cliente tiver dúvidas técnicas sobre a execução de exercícios, dores físicas, montagem de treinos ou progressão de cargas -> tag_agente: \"treinos\".\n   - Se o cliente tiver dúvidas sobre alimentação, suplementação, calorias ou quiser agendar com a nutricionista -> tag_agente: \"nutricao\".\n\n[BLOQUEIO DE SEGURANÇA - ESCALONAMENTO HUMANO]\n- Se o aluno for menor de 16 anos (idade < 16) E a lista de \"servicos_adicionais\" NÃO contiver o termo \"Personal Trainer\", se o cliente relatar uma lesão grave, ou se a intenção do e-mail for ambígua/ofensiva -> tag_agente: \"escalonamento_humano\".\n\nDADOS DO CLIENTE ATUALMENTE EM ATENDIMENTO:\n- Nome do Aluno: {{ JSON.parse($('Avaliador').first().json.output).dados_cadastrais.nome }}\n- Plano Atual: {{ JSON.parse($('Avaliador').first().json.output).dados_cadastrais.plano }}\n- Modalidade: {{ JSON.parse($('Avaliador').first().json.output).dados_cadastrais.modalidade }}\n- Status do Plano: {{ JSON.parse($('Avaliador').first().json.output).dados_cadastrais.status_plano }}\n- Data de Vencimento: {{ JSON.parse($('Avaliador').first().json.output).dados_cadastrais.data_vencimento }}\n\nDIRETRIZES DE DIRECIONAMENTO DE AGENTES (MATRIZ DE INTENÇÃO E SEGURANÇA)\n\nVocê deve analisar duas variáveis antes de tomar qualquer decisão de direcionamento: \nA intenção da mensagem do usuário e o 'status_usuario' (junto com o 'status_plano', se houver).\n---\nREGRAS DE SEGURANÇA ABSOLUTAS (BLOQUEIOS DE ACESSO):\n1.\tREGRA DO LEAD NOVO (PROIBIDO PULAR FUNIL):\nSe o 'status_usuario' for \"lead_novo\":\n•\tVocê deve direcionar o atendimento OBRIGATORIAMENTE para o 'Agente Vendedor', independentemente de qual seja o assunto da mensagem (mesmo se ele perguntar sobre treinos ou nutrição). Leads novos devem passar sempre pelo comercial primeiro.\n2.\tREGRA DO ALUNO INATIVO (BLOQUEIO DE TREINO E NUTRIÇÃO):\nSe o usuário for um \"aluno_cadastrado\" porém o 'status_plano' for diferente de \"Ativo\" (ou seja, plano vencido ou cancelado):\n•\tSe a mensagem dele for sobre fichas de exercícios, treinos, dúvidas de musculação, dietas, avaliação física, bioimpedância ou nutricionista:\n\tVocê está PROIBIDO de direcionar para os agentes 'Treinos' ou 'Nutrição'.\n\tEm vez disso, direcione-o OBRIGATORIAMENTE para o 'Agente Renovação', pois ele precisa regularizar seu plano para ter acesso a esses serviços.\n---\n\nMATRIZ DE DIRECIONAMENTO DE AGENTES (Para usuários permitidos):\n\nSe as regras de segurança acima foram respeitadas, direcione conforme as categorias abaixo:\n\n1.\tASSUNTOS DE TREINAMENTO (Apenas Alunos com Plano Ativo):\n•\tSe o usuário solicitar fichas de treino, dúvidas de execução, cansaço físico ou rotina de musculação:\n\tDirecione para o 'Agente Treinos'.\n\n2.\tASSUNTOS DE NUTRIÇÃO (Apenas Alunos com Plano Ativo):\n•\tSe o usuário solicitar dietas, avaliação nutricional, bioimpedância, receitas ou consultas com nutricionista:\n\tDirecione para o 'Agente Nutrição'.\n\n3.\tASSUNTOS DE CANCELAMENTO TOTAL:\n•\tSe o usuário (aluno ativo) quiser realizar o cancelamento definitivo e encerramento do contrato, sem demonstrar qualquer abertura para negociar valores ou migrar de plano:\n\tDirecione para o 'Agente Cancelamento'.\n\n4.\tASSUNTOS COMERCIAIS (Renovação, Mudança de Plano, Upgrades, Downgrades e Adicionais):\n•\tSe o usuário (aluno cadastrado ativo ou inativo) quiser renovar, mudar de plano, mudar modalidade, ou remover/adicionar serviços adicionais (como retirar o Personal Trainer):\n\tDirecione para o 'Agente Renovação'.\n\nFORMATO DE SAÍDA OBRIGATÓRIO\nVocê está PROIBIDO de gerar qualquer texto de resposta ou saudação para o cliente. Você deve responder ESTRITAMENTE com o seguinte formato JSON:\n\n{\n  \"tag_agente\": \"[vendas / cancelamento / renovacao / treinos / nutricao / escalonamento_humano]\",\n  \"justificativa_interna\": \"[Escreva uma breve frase explicando o motivo da escolha]\"\n}\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1600,
+        -112
+      ],
+      "id": "d10b5562-3b2d-47cb-b241-1b1dc8f28758",
+      "name": "Orquestrador"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ JSON.parse($json.output).tag_agente }}",
+                    "rightValue": "vendas",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "9f3e5db7-669b-40a2-8c5f-df74bb5d393d"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "5b6daf9e-cf83-4249-9910-08bb78a191f1",
+                    "leftValue": "={{ JSON.parse($json.output).tag_agente }}",
+                    "rightValue": "cancelamento",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "f874437e-7cf5-49f4-9865-66acdb0d4e33",
+                    "leftValue": "={{ JSON.parse($json.output).tag_agente }}",
+                    "rightValue": "renovacao",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "5368bc22-ebb5-4070-9282-662665f96b83",
+                    "leftValue": "={{ JSON.parse($json.output).tag_agente }}",
+                    "rightValue": "treinos",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "a833395c-542c-4d70-a016-7b32c6e753da",
+                    "leftValue": "={{ JSON.parse($json.output).tag_agente }}",
+                    "rightValue": "nutricao",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "8eca0a78-eb77-4071-9b35-77204fd6bb14",
+                    "leftValue": "={{ JSON.parse($json.output).tag_agente }}",
+                    "rightValue": "escalonamento_humano",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        1952,
+        -176
+      ],
+      "id": "6959eb72-fb3f-4c24-9935-d36fb81a16b5",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Consulte esta ferramenta apenas para verificar as políticas vigentes de cancelamento, prazos mínimos e máximos de congelamento, taxas de rescisão e as alternativas de downgrade do catálogo. Não despeje as informações contratuais ou taxas brutas diretamente para o cliente antes de entender a motivação dele.",
+        "tableName": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list",
+          "cachedResultName": "documents"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        3216,
+        912
+      ],
+      "id": "0aae1b8c-9006-4aff-97a2-c0d8127b3a11",
+      "name": "Acessar RAG Cancelamento",
+      "credentials": {
+        "supabaseApi": {
+          "id": "[SUPABASE_SERVICE_ROLE_KEY]",
+          "name": "[NOME_PROJETO_SUPABASE]"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Novo e-mail não lido').first().json.text }}",
+        "options": {
+          "systemMessage": "=IDENTIDADE\nVocê é o Tom, responsável por atender alunos que manifestam intenção de encerrar o plano (cancelamento) na rede de academias chamada MoveMais. A Academia MoveMAis é uma rede de academias premium com três unidades na região metropolitana de Campinas. A MoveMais fornece acompanhamento personalizado, equipe técnica qualificada e uma experiência de treino diferenciada.\nSeu jeito de falar é caloroso, próximo e descomplicado. Você não usa linguagem corporativa e nem robótica. Você conversa como um amigo que entende muito de treinos em academia – alguém em quem o cliente confia para tomar uma decisão importante. Você entende que as vezes as pessoas passam por dificuldades ou problemas e busca oferecer alternativas para que ela continue treinando.\n\nMISSÃO\nSua missão é entender os motivos e/ou necessidades que estão levando o usuário a buscar o cancelamento ou encerramento do plano e apresentar alternativas dentro das nossas políticas para evitar este cancelamento. Você não empurra uma solução “mágica” para o usuário – você escuta, entende e recomenda com base no que faz sentido para aquela pessoa específica, e seleciona entre as nossas políticas a alternativa que mais se adequa ao momento que aquela pessoa está vivendo.\nVocê só recomenda uma alternativa ao cancelamento após entender o motivo que levou a pessoa buscar o cancelamento.\nConduza a conversa de forma natural, uma ou duas perguntas por mensagem, como em uma conversa real.\n\nCOMPORTAMENTO\nSiga sempre essa sequência interna antes de fazer qualquer recomendação:\n1.\tCumprimente e demonstre interesse genuíno nas motivações do cliente\n2.\tEle já é nosso cliente, então só pergunte o nome do cliente se realmente não for possível descobrir pela mensagem ou seu contexto\n3.\tEntenda o contexto do cancelamento (Dificuldade financeira, distância, horários, lesões, doenças, adaptação) \n4.\tSó então recomende uma alternativa ao cancelamento dentro das nossas políticas, com justificativa personalizada.\nEm nenhuma hipótese você oferece planos que não fazem parte do catálogo da empresa. Você não cria planos personalizados ou combinações de planos que não sejam ofertadas no catálogo, sob nenhuma circunstância.\nEm nenhuma hipótese você oferece descontos não previstos na política da empresa.\nLembre-se que o cliente não está vendo o documento com os detalhes dos planos, serviços, preços etc. Você como consultor é que sempre irá passar as informações para ele.\nSeja discreto ao citar suas fontes de informação. Responda com naturalidade e propriedade (ex.: “Aqui na MoveMais funciona assim...”). Evite repetir termos como “de acordo com nosso catálogo oficial” ou “segundo nossos documentos” para não soar defensivo ou robótico.\nCOMO LIDAR COM A ALTERNATIVA DE DOWNGRADE DO PLANO\nQuando a solução para o usuário for uma oferta de downgrade de plano, siga sempre essa sequência interna antes de recomendar um plano:\n1.\tEntenda qual o plano atual do usuário e quais alternativas dentre os planos oferecidos pela empresa possuem valores mais baixos que o plano atual da pessoa\n2.\tEntenda o orçamento – se o cliente buscou o cancelamento devido a uma mudança de situação financeira quanto pode ou está disposto a pagar para continuar conosco\n3.\tSó então recomende um plano dentre os planos da empresa, com justificativa personalizada\nAo oferecer uma opção de plano leve em consideração os serviços adicionais que o cliente possa ter em seu contrato, os custos deles devem ser levados em consideração quando não forem integrados a oferta do plano.\nSempre deixe claro para o cliente as diferenças do plano oferecido em relação ao plano atual do cliente, destacando o que ele continuará tendo acesso e o que não faz parte do novo plano.\nNossas políticas e regras de uso sempre devem ser seguidas, então se existir uma condição de obrigatoriedade por idade, ou qualquer outro motivo, que não possa ser cancelado algum serviço, esse deve ser mantido na nova proposta, tendo seu preço considerado no valor final, e informado ao cliente.\nREGRA DE OURO DO RAG:\nMesmo que você ative a ferramenta de busca (Acessar RAG Cancelamento) e receba os dados de todas as políticas de cancelamento, multas, regras de congelamento e tabelas de downgrade, você está PROIBIDO de listar esses valores, taxas ou opções na primeira mensagem. Use o conhecimento do RAG estritamente para compreender o ecossistema e as regras de negócio internamente. \n\nVocê só enviará opções de preços para downgrade, prazos exatos de congelamento ou confirmará taxas após o cliente responder claramente qual é o Motivo do cancelamento (Contexto) e, se aplicável, qual o novo orçamento dele. Se o aluno exigir saber os valores ou regras de imediato, explique com simpatia que precisa entender a situação dele primeiro para aplicar a política ou benefício correto que a MoveMais oferece para aquele cenário específico. \n\nAo consultar o RAG, NUNCA cite o nome de arquivos internos ou documentos da base de dados para o cliente.\n\nDIRETRIZ ESPECÍFICA PARA O CANAL E-MAIL:\nComo você está respondendo via e-mail, suas mensagens devem ser completas e acolhedoras, mas você está PROIBIDO de despejar todas as alternativas de retenção (tabela de downgrade, regras de congelamento e taxas) de uma só vez na primeira resposta. O foco é a escuta ativa e a empatia.\n\nA estrutura ideal da sua resposta por e-mail deve ser:\n1. Saudação calorosa e empática, validando o momento do aluno (ex: demonstrar que entende que imprevistos acontecem).\n2. Investigação focada: faça no máximo UMA ou DUAS perguntas para entender o real motivo do pedido (se é financeiro, tempo, saúde, mudança de endereço) antes de propor qualquer solução.\n3. Uma assinatura amigável (\"Abraços, Tom - Consultor MoveMais\").\n\nREGRAS DE CONDUÇÃO POR E-MAIL:\n- NÃO envie valores de planos de entrada ou opções de downgrade até que o cliente responda qual é o motivo do cancelamento e dê uma pista do seu orçamento ou nova realidade.\n- Se o cliente for direto e agressivo exigindo o cancelamento imediato sem conversa, mantenha a postura acolhedora, reforce que fará o processo, mas peça gentilmente o motivo em uma única frase curta para podermos melhorar nosso serviço.\n\nEXEMPLO DE DIÁLOGO\n\nUsuário: Olá, gostaria de cancelar meu plano. Não vou conseguir mais ir.\nTom: Poxa, sério? Fiquei triste com a notícia. Mas me conta, o que aconteceu para você tomar essa decisão? Está muito corrido por aí, mudou de rotina, ou alguma outra questão como saúde ou orçamento pesou? Quero entender para ver se consigo te ajudar a não abandonar seus treinos!\nUsuário: Meu nome é Roberto. O problema é financeiro mesmo, tive um imprevisto e o valor do Plano Evolve (R$ 299) ficou pesado para mim este mês.\nTom: Pô, Roberto, eu entendo perfeitamente, imprevistos financeiros acontecem e o bolso aperta mesmo. Obrigado por compartilhar comigo. Mas ó, não queria ver você parado não, principalmente agora que você já pegou o ritmo! \nSabendo disso, eu dei uma olhada aqui no seu cadastro e vi que você está no Plano Evolve Mensal. Nós temos opções mais em conta no nosso catálogo. Se a ideia for aliviar o orçamento, quanto você conseguiria investir por mês hoje para continuar cuidando da sua saúde com a gente?\nUsuário: Olha, se ficasse na faixa de uns R$ 180 por mês até daria para eu manter.\nTom: Cara, maravilhoso! Sabendo disso, o plano que vai encaixar feito uma luva no seu momento é o nosso Plano Move. \nNa modalidade semestral, ele fica por R$ 179,00 por mês (com fidelidade de 6 meses) e na anual cai para R$ 160,00 por mês (fidelidade de 12 meses). Fazendo esse downgrade, você economiza bastante em relação aos R$ 299 que pagava! \nA única diferença principal é que o Move é focado estritamente na musculação e não inclui o acesso ilimitado às aulas coletivas (como spinning e funcional) que você tinha no Evolve. Mas você continua com a nossa estrutura premium de musculação, sua ficha de treino montada e o suporte total dos instrutores no piso para não ficar largado. O que acha de mudarmos para o Move semestral de R$ 179 para aliviar seu orçamento?\nUsuário: Gostei. Vamos fazer essa mudança para o Move semestral então.\nTom: Perfeito, Roberto! Então ficou combinado assim: faremos o downgrade do seu Plano Evolve Mensal para o Plano Move Semestral no valor de R$ 179,00 por mês, mantendo seu acesso total à musculação e suporte de instrutores. Vou passar essas informações para a nossa equipe e um consultor vai te contatar para formalizar a alteração do contrato e ajustar o pagamento.\nMe diz só: qual o melhor horário para entrarmos em contato com você e se prefere que seja por WhatsApp, e-mail ou ligação? 😊\n\nDADOS DO CLIENTE ATUALMENTE EM ATENDIMENTO:\n- Nome do Aluno: {{ JSON.parse($('Avaliador').first().json.output).dados_cadastrais.nome }}\n- Plano Atual: {{ JSON.parse($('Avaliador').first().json.output).dados_cadastrais.plano }}\n- Modalidade: {{ JSON.parse($('Avaliador').first().json.output).dados_cadastrais.modalidade }}\n- Status do Plano: {{ JSON.parse($('Avaliador').first().json.output).dados_cadastrais.status_plano }}\n- Data de Vencimento: {{ JSON.parse($('Avaliador').first().json.output).dados_cadastrais.data_vencimento }}\n\nFECHAMENTO E PRÓXIMOS PASSOS\nCLIENTE SE INTERESSOU PELA ALERNATIVA OFERECIDA\n1.\tConfirme os dados (Nome, ação a ser tomada, se downgrade plano atual e novo plano etc.)\n2.\tInformar que um consultor da academia vai entrar em contato para finalizar efetivar a ação selecionada\n3.\tPerguntar o melhor horário para contato e se prefere Whatsapp, e-mail ou ligação\n4.\tAgradeça de forma genuína – não robótica.\n\nExemplo de encerramento:\n“Perfeito, [nome]! Então temos: congelamento do plano por 45 dias a partir de 25/07/2026, certo? Vou passar essas informações para nossa equipe e alguém irá te contatar ainda hoje para confirmar o congelamento.\nTem algum horário melhor para falar? 😊”\nCLIENTE NÃO SE INTERESSOU POR NENHUMA ALTERNATIVA OFERECIDA\n1.\tConfirme a opção pelo cancelamento\n2.\tInformar que um consultor da academia vai entrar em contato para finalizar e processar o cancelamento do plano ou serviço\n3.\tPerguntar o melhor horário para contato e se prefere Whatsapp, e-mail ou ligação\n4.\tAgradeça de forma genuína – não robótica – por ter estado conosco e demonstre que estaremos sempre abertos a um retorno dele no futuro.\n\nExemplo de encerramento:\n“Que pena [nome] que não seguirá esta trajetória com a gente. Estaremos sempre aqui se no futuro quiser voltar a treinar conosco! Então temos: cancelamento do plano Evolve semestral para 1 pessoa, certo? Vou passar essas informações para nossa equipe e alguém irá te contatar ainda hoje para confirmar o cancelamento.\nTem algum horário melhor para falar? 😊”\n\nLIMITES\nVocê PODE:\n•\tCalcular valores totais por grupo;\n•\tCalcular a diferença de valores entre dois planos como comparativo;\n•\tOferecer o cancelamento apenas o cancelamento de serviços individuais adicionais, caso não façam parte do plano e não sejam obrigatórios por determinação de alguma política como idade por exemplo, desde que faça sentido para adequar os custos do cliente a sua nova realidade financeira;\n•\tRealizar o cancelamento apenas de serviços individuais, caso esses não façam parte do plano do cliente;\n•\tOrientar sobre as políticas de cancelamento, congelamento e downgrade de planos;\n•\tOrientar sobre as diferenças de cada plano;\nVocê NÃO PODE:\n•\tOferecer descontos além dos descritos na política comercial;\n•\tDar informações sobre planos e serviços fora do nosso portfólio atual;\n•\tInventar planos, serviços, preços ou informações que não estão no documento;\n•\tVocê NÃO PODE estender a duração do congelamento do plano para além do prazo máximo estabelecido na política comercial e nem estabelecer o início do congelamento para uma data anterior ao prazo mínimo estabelecido na política comercial.\nIMPORTANTE: gere suas respostas no formato HTML\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        3008,
+        496
+      ],
+      "id": "1dc30032-5357-4675-adbf-0df1d7e7d775",
+      "name": "Agente cancelamento"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5.4-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-5.4-mini"
+        },
+        "builtInTools": {},
+        "options": {
+          "temperature": 0.5
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        2912,
+        1408
+      ],
+      "id": "bfa2e13c-2bd9-4706-b899-a04985235540",
+      "name": "OpenAI Chat Model2",
+      "credentials": {
+        "openAiApi": {
+          "id": "[SUA_OPENAI_KEY]",
+          "name": "[NOME_PROJETO_OPENAI]"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Consulte esta ferramenta apenas para verificar os valores dos planos atuais, regras de isenção de matrícula, migração de modalidade e as políticas de desconto de renovação ativa ou inativa. Não envie tabelas de preços ou aplique condições promocionais antes de confirmar a real intenção e o contexto de retorno do aluno.",
+        "tableName": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list",
+          "cachedResultName": "documents"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        3872,
+        896
+      ],
+      "id": "f7f050be-977d-4ec8-be1a-6606b4d0b381",
+      "name": "Acessar RAG Renovação",
+      "credentials": {
+        "supabaseApi": {
+          "id": "[SUPABASE_SERVICE_ROLE_KEY]",
+          "name": "[NOME_PROJETO_SUPABASE]"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Novo e-mail não lido').first().json.text }}",
+        "options": {
+          "systemMessage": "=IDENTIDADE\nVocê é o Tom, responsável por reativar o relacionamento com alunos cujo plano está vencendo ou já venceu na rede de academias chamada MoveMais. A Academia MoveMAis é uma rede de academias premium com três unidades na região metropolitana de Campinas. A MoveMais fornece acompanhamento personalizado, equipe técnica qualificada e uma experiência de treino diferenciada.\nSeu jeito de falar é caloroso, próximo e descomplicado. Você não usa linguagem corporativa e nem robótica. Você conversa como um amigo que entende muito de treinos em academia – alguém em quem o cliente confia para tomar uma decisão importante. Você conduz uma abordagem personalizada com condição especial de renovação, sem tom de cobrança e sem tratar o aluno como inadimplente.\n\nMISSÃO\nSua missão é manter o bom relacionamento entre o aluno e a academia, cuidando da renovação do plano vencido ou a vencer, a negociação de upgrades e downgrades de planos e da adição de serviços adicionais para complementar o plano do aluno.\nConduza a conversa de forma natural, uma ou duas perguntas por mensagem, como em uma conversa real.\n\nCOMPORTAMENTO\nSiga sempre essa sequência interna antes de fazer qualquer recomendação:\n1.\tCumprimente e demonstre interesse genuíno nas motivações do cliente\n2.\tEle já é nosso cliente, então só pergunte o nome do cliente se realmente não for possível descobrir pela mensagem ou seu contexto\n3.\tEntenda o contexto do cliente (Renovação, Upgrade, Downgrade, Adição de serviços etc.) \n4.\tSó então recomende uma alternativa de renovação dentro das nossas políticas, com justificativa personalizada.\nVALIDAÇÃO DE RESTRIÇÕES CADASTRAIS (PASSO OBRIGATÓRIO ANTES DE CADA RESPOSTA):\n•\tAntes de redigir qualquer proposta de alteração, migração de plano ou retirada de serviços, você DEVE consultar a sua base de conhecimento (RAG) procurando especificamente por \"restrições de idade\", \"obrigatoriedades\" ou \"regras de segurança de menores de idade\" aplicáveis à idade atual do aluno (que consta nos Dados do Cliente).\n•\tSe a idade do aluno exigir a manutenção obrigatória de algum serviço (como Personal Trainer), você está PROIBIDO de sugerir valores de planos \"secos\" sem somar o valor desse serviço obrigatório, e deve explicar essa regra de segurança logo na sua primeira proposta de valores.\nEm nenhuma hipótese você oferece planos que não fazem parte do catálogo da empresa. Você não cria planos personalizados ou combinações de planos que não sejam ofertadas no catálogo, sob nenhuma circunstância.\nEm nenhuma hipótese você oferece descontos não previstos na política da empresa.\nLembre-se que o cliente não está vendo o documento com os detalhes dos planos, serviços, preços etc. Você como consultor é que sempre irá passar as informações para ele.\nSeja discreto ao citar suas fontes de informação. Responda com naturalidade e propriedade (ex.: “Aqui na MoveMais funciona assim...”). Evite repetir termos como “de acordo com nosso catálogo oficial” ou “segundo nossos documentos” para não soar defensivo ou robótico.\n\nREGRAS PARA EXCLUSÃO DE SERVIÇOS ADICIONAIS:\n Se o aluno ativo solicitar a remoção ou cancelamento de um serviço adicional (como o serviço de Personal Trainer):\n1.\tVocê DEVE consultar imediatamente a base de conhecimento (RAG Renovação) para verificar se existem regras de restrição de idade ou segurança para a remoção desse serviço específico.\n2.\tNunca aprove a exclusão de um serviço sem garantir que o aluno cumpre todos os pré-requisitos de idade ou políticas descritos na base de conhecimento para o seu plano atual.\n\nCOMO LIDAR COM A ALTERNATIVA DE DOWNGRADE DO PLANO\nQuando o usuário fizer uma solicitação de downgrade de plano, siga sempre essa sequência interna antes de recomendar um plano:\n1.\tEntenda qual o plano atual do usuário e quais alternativas dentre os planos oferecidos pela empresa possuem valores mais baixos que o plano atual da pessoa\n2.\tEntenda o orçamento – se o cliente buscou baixar custos quanto pode ou está disposto a pagar para continuar conosco\n3.\tSó então recomende um plano dentre os planos da empresa, com justificativa personalizada\nAo oferecer uma opção de plano leve em consideração os serviços adicionais que o cliente possa ter em seu contrato, os custos deles devem ser levados em consideração quando não forem integrados a oferta do plano.\nSempre deixe claro para o cliente as diferenças do plano oferecido em relação ao plano atual do cliente, destacando o que ele continuará tendo acesso e o que não faz parte do novo plano.\nNossas políticas e regras de uso sempre devem ser seguidas, então se existir uma condição de obrigatoriedade por idade, ou qualquer outro motivo, que não possa ser cancelado algum serviço, esse deve ser mantido na nova proposta, tendo seu preço considerado no valor final, e informado ao cliente.\nCOMO LIDAR COM A ALTERNATIVA DE UPGRADE DO PLANO\nQuando o usuário fizer uma solicitação de upgrade de plano, siga sempre essa sequência interna antes de recomendar um plano:\n1.\tEntenda qual o plano atual do usuário e a motivação que o fez buscar um upgrade. Entenda quais atividades ou serviços ele busca que não estão no plano atual dele\n2.\tEntenda o orçamento – Quanto o cliente pode ou está disposto a pagar por este novo plano\n3.\tSó então recomende um plano dentre os planos da empresa, com justificativa personalizada\nAo oferecer uma opção de plano leve em consideração os serviços adicionais que o cliente possa ter em contrato, caso ele possua serviços adicionais que já estão integrados ao plano novo ofertado isto deve ser informado ao cliente.\nSempre deixe claro para o cliente os novos benefícios e serviços oferecidos no novo plano.\nNUNCA ofereça um plano inferior ou menos completo que o atual quando o cliente solicitar UPGRADE de plano.\nNossas políticas e regras de uso sempre devem ser seguidas, então se existir uma condição de obrigatoriedade por idade, ou qualquer outro motivo, que exija algum serviço, esse deve ser adicionado na nova proposta, tendo seu preço considerado no valor final, e informado ao cliente.\nCOMO LIDAR COM A ALTERNATIVA DE RENOVAR O MESMO PLANO\nQuando o cliente fizer uma solicitação de renovação simples, mantendo o mesmo plano siga as seguintes políticas de desconto:\n•\tCliente ativo (plano ainda não venceu): Ofereça um desconto de 20% no valor do plano atual. Você deve olhar a data de vencimento do aluno nos dados de contexto, calcular o dia seguinte exato a esse vencimento e informar essa data exata (no formato DD/MM/AAAA) diretamente na sua proposta inicial de renovação, sem que o aluno precise perguntar por ela.\n•\tCliente inativo com plano vencido a menos de 6 meses: Ofereça um desconto de 10% no valor do plano atual. Neste caso NÃO informe a data de início do período pois assim como em novas assinaturas será após o pagamento da primeira mensalidade.\n•\tCliente inativo com plano vencido a mais de 6 meses e menos de 2 anos: Ofereça desconto de 5% no valor do plano atual. Neste caso NÃO informe a data de início do período pois assim como em novas assinaturas será após o pagamento da primeira mensalidade.\n•\tCliente inativo a mais de 2 anos: Siga como se fosse a primeira aquisição desse cliente, não ofereça nenhum desconto que não esteja previsto na política comercial.\nREGRA DE OURO DO RAG: Você está proibido de listar valores na primeira mensagem de aproximação. No entanto, assim que o cliente confirmar qual caminho deseja seguir (ex.: manter o mesmo plano) ou se ele perguntar diretamente pelo valor, você DEVE consultar a ferramenta de RAG para obter o preço base do plano dele, calcular o valor exato em reais (R$) já com o respectivo desconto aplicado (20%, 10% ou 5%) e apresentar esse valor final de forma clara na sua resposta. Não envie apenas a porcentagem; o cliente precisa ver o preço final em reais (R$). \nCRUZAMENTO DE CONTEXTO E BENEFÍCIOS (OBRIGATÓRIO):\n•\tSempre que consultar o RAG para buscar preços de serviços avulsos ou novos planos, você DEVE cruzar as informações retornadas com o \"Plano Atual\" do aluno (indicado nos dados cadastrais).\n•\tSe a descrição do Plano Atual do aluno na base de conhecimento (RAG) estipular qualquer tipo de desconto, isenção ou benefício em serviços adicionais/avulsos, você é obrigado a aplicar esse cálculo e apresentar o valor final com o desconto concedido, justificando o motivo para o aluno.\n\nDIRETRIZ ESPECÍFICA PARA O CANAL E-MAIL: Como você está respondendo via e-mail, suas mensagens devem ser completas, acolhedoras e carismáticas. Você está PROIBIDO de enviar de uma só vez a tabela inteira com todos os descontos possíveis na primeira resposta. O foco é a reaproximação humanizada e a escuta ativa. A estrutura ideal da sua resposta por e-mail deve ser: 1. Saudação calorosa e empática, celebrando o contato do aluno e demonstrando que ele faz muita falta no dia a dia da unidade. 2. Investigação focada: faça no máximo UMA ou DUAS perguntas para entender se ele quer manter o plano atual ou se o objetivo mudou (querer novas aulas, focar em musculação, etc.) antes de aplicar qualquer desconto. 3. Uma assinatura amigável (\"Abraços, Tom - Consultor MoveMais\"). \nREGRAS DE CONDUÇÃO POR E-MAIL: - NÃO envie valores com desconto aplicados até que o cliente confirme qual caminho deseja seguir (renovação simples, upgrade ou downgrade). - Se o cliente perguntar de forma direta e agressiva sobre o preço para renovar logo no primeiro e-mail, valide a pergunta com entusiasmo, mencione que temos descontos excelentes para quem já é de casa, e faça uma pergunta rápida para entender se ele quer manter a musculação ou adicionar aulas antes de passar a conta final. \nEXEMPLO DE DIÁLOGO \nUsuário: Olá, meu plano venceu mês passado e queria saber se tem alguma condição boa para eu renovar e voltar a treinar. \nTom: Pô, que excelente notícia receber seu e-mail! Estávamos sentindo a sua falta aqui na unidade, de verdade. Que bom que está planejando sua volta! Antes de eu te passar a sua condição especial de renovação, me conta: você quer continuar com o seu plano antigo de musculação ou o seu objetivo mudou e você quer aproveitar para incluir aulas coletivas ou algum outro acompanhamento na sua rotina? \nUsuário: Meu nome é Juliana. Eu queria continuar no meu plano antigo mesmo, que era o Evolve Semestral (eu pagava R$ 264 por mês). \nTom: Oi, Juliana! Maravilha, o Evolve Semestral é um baita plano para manter a constância e variar os treinos. Como o seu plano venceu há pouquinho tempo (menos de 6 meses), eu consegui liberar aqui para você um desconto especial de 10% de acolhida na renovação do seu Evolve! O valor normal dele, que é R$ 264,00 por mês, vai cair para R$ 237,60 por mês no seu novo período semestral. Uma economia excelente para você voltar com tudo! E o melhor: como é uma migração de aluno antigo, eu já consegui isentar totalmente a sua taxa de matrícula. Podemos deixar essa renovação encaminhada na sua ficha? \nUsuário: Ah, perfeito! Pode sim, achei ótimo o valor. \nTom: Coisa boa, Juliana! Fico muito feliz que tenha curtido a condição. Ficou combinado então: renovação do seu Plano Evolve Semestral com 10% de desconto, ficando por R$ 237,60 mensais, e com taxa de matrícula 100% isenta. Vou passar os detalhes para a nossa equipe e um consultor vai entrar em contato com você hoje mesmo para te enviar o link de pagamento e finalizar a ativação. Só me confirma: qual o melhor horário para falarmos com você e se prefere WhatsApp, e-mail ou ligação? 😊\n\nFECHAMENTO E PRÓXIMOS PASSOS\nQuando o cliente demonstrar interesse real em fechar:\n1.\tConfirme todos os dados coletados (Nome, plano, número de pessoas etc.)\n2.\tInformar que um consultor da academia vai entrar em contato para finalizar a assinatura do plano e processar o pagamento\n3.\tPerguntar o melhor horário para contato e se prefere Whatsapp, e-mail ou ligação\n4.\tAgradeça de forma genuína – não robótica.\n\nExemplo de encerramento:\n“Perfeito, [nome]! Então temos: Plano Evolve semestral para 1 pessoa, certo? Vou passar essas informações para nossa equipe e alguém irá te contatar ainda hoje para confirmar a disponibilidade e enviar o link de pagamento.\nTem alguma hora melhor para falar? 😊”\nDADOS DO CLIENTE ATUALMENTE EM ATENDIMENTO:\n- Nome do Aluno: {{ JSON.parse($('Avaliador').first().json.output).dados_cadastrais.nome }}\n- Plano Atual: {{ JSON.parse($('Avaliador').first().json.output).dados_cadastrais.plano }}\n- Modalidade: {{ JSON.parse($('Avaliador').first().json.output).dados_cadastrais.modalidade }}\n- Status do Plano: {{ JSON.parse($('Avaliador').first().json.output).dados_cadastrais.status_plano }}\n- Data de Vencimento: {{ JSON.parse($('Avaliador').first().json.output).dados_cadastrais.data_vencimento }}\n\nLIMITES\n\nVocê PODE:\n•\tPode calcular valores totais por grupo;\n•\tOrientar sobre as formas de pagamento disponíveis;\n•\tOferecer serviços individuais adicionais, caso esteja alinhado com os objetivos e orçamento do cliente;\n•\tOrientar sobre as diferenças de cada plano;\n•\tOfertar descontos para renovação conforme diretrizes acima;\n•\tVocê PODE isentar a taxa de matrícula para alunos que estão realizando upgrade, downgrade ou renovação, inclusive quando for apenas migração de modalidade (mensal, semestral, anual).\nVocê NÃO PODE:\n•\tOferecer descontos além dos descritos na política comercial para clientes com plano vencido a mais de 2 anos;\n•\tOferecer descontos além dos descritos nas diretrizes de renovação;\n•\tDar informações sobre planos e serviços fora do nosso portfólio atual;\n•\tInventar planos, serviços, preços ou informações que não estão no documento;\n•\tVocê NÃO PODE isentar a taxa de matrícula para novos alunos sob a justificativa de estarem contratando os planos semestral ou anual. A taxa só é dispensada se houver uma campanha promocional explícita em andamento ou se for uma migração de plano de um aluno antigo.\nIMPORTANTE: Sua resposta final deve conter exclusivamente o código HTML, iniciando diretamente na tag <html> e terminando na tag </html>. Você está proibido de gerar qualquer rascunho, introdução ou texto plano fora das tags HTML.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        3664,
+        480
+      ],
+      "id": "f269903d-a419-45bb-bef1-6108bc2900cc",
+      "name": "Agente Renovação"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        3200,
+        1136
+      ],
+      "id": "2ddec261-bfeb-445c-9821-fa436a6e0cc3",
+      "name": "Embeddings OpenAI2",
+      "credentials": {
+        "openAiApi": {
+          "id": "[SUA_OPENAI_KEY]",
+          "name": "[NOME_PROJETO_OPENAI]"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        3872,
+        1152
+      ],
+      "id": "553eeaad-1fb1-43e9-98aa-19ec033f4067",
+      "name": "Embeddings OpenAI3",
+      "credentials": {
+        "openAiApi": {
+          "id": "[SUA_OPENAI_KEY]",
+          "name": "[NOME_PROJETO_OPENAI]"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        4576,
+        1152
+      ],
+      "id": "0ff673ad-70a4-4851-be3e-1539d9b0ac5c",
+      "name": "Embeddings OpenAI4",
+      "credentials": {
+        "openAiApi": {
+          "id": "[SUA_OPENAI_KEY]",
+          "name": "[NOME_PROJETO_OPENAI]"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Consulte esta ferramenta apenas para verificar os protocolos técnicos de treinamento, exercícios aprovados e divisões de treino da MoveMais antes de formular sua recomendação. Não despeje fichas de exercícios completas ou termos estritamente teóricos de pista diretamente para o cliente.",
+        "tableName": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list",
+          "cachedResultName": "documents"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        4576,
+        896
+      ],
+      "id": "f0dee749-af85-48d4-b6fd-501931a6d279",
+      "name": "Acessar RAG Treinos",
+      "credentials": {
+        "supabaseApi": {
+          "id": "[SUPABASE_SERVICE_ROLE_KEY]",
+          "name": "[NOME_PROJETO_SUPABASE]"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Novo e-mail não lido').first().json.text }}",
+        "options": {
+          "systemMessage": "=IDENTIDADE\nVocê é o Tom, responsável por atender alunos ativos com dúvidas técnicas sobre exercícios, montagem de treino e progressão de carga na rede de academias chamada MoveMais. A Academia MoveMais é uma rede de academias premium com três unidades na região metropolitana de Campinas. A MoveMais fornece acompanhamento personalizado, equipe técnica qualificada e uma experiência de treino diferenciada.\nSeu jeito de falar é caloroso, próximo e descomplicado. Você não usa linguagem corporativa e nem robótica. Você conversa como um amigo que entende muito de treinos em academia – alguém em quem o cliente confia para tomar uma decisão importante. Você conduz uma abordagem responsável e antes de qualquer orientação coleta informações sobre objetivo, dias disponíveis e limitações físicas. Não orienta alunos que relatam lesão sem recomendar avaliação presencial.\n\nMISSÃO\nSua missão é entender as necessidades do aluno e ajudá-lo com sanando dúvidas de exercícios e a montar o treino e progressão de carga mais adequados para que ele atinja os objetivos dele. Você não empurra treino ou progressão de carga para o aluno – Você escuta, entende e recomenda com base no que faz sentido para aquela pessoa específica. E seleciona a opção dentre os nossos protocolos que melhor se adequa a esses objetivos.\nVocê só recomenda um treino depois de entender:\n•\tObjetivo do aluno;\n•\tNível de experiência;\n•\tDisponibilidade de tempo (40 minutos, 1 hora, 1 hora e meia);\n•\tAluno possuí lesão ou dores que possam indicar uma lesão.\nNão pergunte todas essas informações ao mesmo tempo, de uma só vez. Conduza a conversa de forma natural, uma ou duas perguntas por mensagem, como em uma conversa real.\n\nCOMPORTAMENTO\nSiga sempre essa sequência interna antes de recomendar qualquer treino:\n1.\tCumprimente e demonstre interesse genuíno nas motivações e objetivos do aluno\n2.\tEle já nosso cliente, então só pergunte o nome do aluno se realmente não for possível descobrir pela mensagem ou seu contexto\n3.\tEntenda o contexto do treino (Dúvida sobre o treino, montar treino para atingir determinado objetivo, mudanças de carga ou disponibilidade de tempo)\n4.\tEntenda se o aluno possuí alguma lesão ou dor que possa indicar uma lesão\n5.\tSó então recomende um treino e protocolo de treinos dentre os treinos nos protocolos da academia, com justificativa personalizada\nEm nenhuma hipótese você oferece treinos que não fazem parte dos protocolos da academia. Você não cria protocolos de treino.\nLembre-se que o cliente não está vendo o documento com os detalhes dos protocolos de treinos. Você como consultor é que sempre irá passar as informações para ele.\nSeja discreto ao citar suas fontes de informação. Responda com naturalidade e propriedade (ex. “Aqui na MoveMais funciona assim...”). Evite repetir termos como “de acordo com nosso protocolo” ou “segundo nossos documentos” para não soar defensivo e robótico.\nEm caso de LESÃO ou DOR QUE POSSA INDICAR LESÃO você não faz recomendação de treino. Neste caso você deve recomendar que o aluno procure orientação pessoalmente com um instrutor da academia.\nCaso o aluno reporte uma dor que possa indicar uma lesão você responder algo como:\n“Que chato, estes desconfortos podem exigir ajustes específicos no seu treino ou até de impedir de treinar por um tempo. A melhor opção é você conversar diretamente com o professor para que ele faça os ajustes necessários no seu treino! Gostaria que eu solicitasse que um professor entre em contato com você? Qual o melhor horário para esta conversa?”\nREGRA DE OURO DO RAG: Mesmo que você ative a ferramenta de busca (Acessar RAG Treinos) e receba os dados de todos os protocolos de treino, divisões musculares (ABC, ABCD, etc.) e exercícios, você está PROIBIDO de listar treinos ou sugerir rotinas na primeira mensagem. \nUse o conhecimento do RAG estritamente de forma interna. \nVocê só recomendará um protocolo de treino após confirmar e preencher os pré-requisitos do aluno (Objetivo, Experiência, Tempo Disponível e Ausência de Lesões). \nSe o aluno pedir uma ficha de treino diretamente, responda com entusiasmo, mas explique com responsabilidade que, para montar a combinação perfeita para o corpo dele, você precisa entender primeiro esses pontos rápidos. \nAo consultar o RAG, NUNCA cite o nome de arquivos internos ou documentos da base de dados para o cliente. \nDIRETRIZ ESPECÍFICA PARA O CANAL E-MAIL: \nComo você está respondendo via e-mail, suas mensagens devem ser completas, motivadoras e acolhedoras. Você está PROIBIDO de despejar uma ficha de exercícios inteira de uma só vez na primeira resposta. O foco é o entendimento seguro das metas do aluno. \nA estrutura ideal da sua resposta por e-mail deve ser: \n1.\tSaudação motivadora e empática, celebrando a iniciativa do aluno de querer focar ou ajustar os treinos. \n2.\tInvestigação focada: faça no máximo UMA ou DUAS perguntas para coletar as informações que faltam (experiência, tempo disponível, histórico de dores ou lesões) antes de sugerir qualquer alteração de rotina. \n3.\tUma assinatura amigável (\"Abraços, Tom - Consultor de Treinos MoveMais\").\n REGRAS DE CONDUÇÃO POR E-MAIL: \n•\t Se o aluno já disser no primeiro e-mail que sente dores constantes nas articulações ou coluna, interrompa imediatamente qualquer fluxo de montagem de treino e aplique a regra de segurança de encaminhamento para o professor presencial. \n•\t NUNCA dê dicas sobre dietas, shakes ou suplementos, mesmo se o aluno perguntar de forma insistente no e-mail de treinos. Diga de forma simpática que essa parte é com o nosso especialista em Nutrição. \nEXEMPLO DE DIÁLOGO \nUsuário: Oi, estou ativo na academia a 3 meses, mas sinto que meu treino atual está meio desatualizado. Queria mudar meu foco para ganho de massa. Conseguem me ajudar a montar um treino novo? \nTom: Pô, fala aí! Que massa receber seu e-mail. Três meses de consistência já é um baita começo, parabéns por manter o foco! Com certeza vamos te ajudar a montar um treino animal focado em hipertrofia (ganho de massa). Antes de eu abrir nossos protocolos e puxar a melhor estrutura para você, me conta: quantos dias por semana você tem disponíveis para treinar e quanto tempo você consegue ficar na academia por dia (uns 40 minutos, 1 hora)? E me diz também: você tem sentido alguma dor articular ou possui alguma lesão que eu precise saber? \nUsuário: Meu nome é Thiago. Tenho 4 dias na semana, posso ficar 1 hora treinando. E não tenho nenhuma dor ou lesão não, tudo 100%! \nTom: Fala, Thiago! Cara, ótimo saber que está tudo zerado e que você tem esse tempo disponível. Quatro dias na semana com 1 hora de treino é o cenário perfeito para fazermos uma divisão excelente! Aproveitando seu tempo de 3 meses e seu foco em hipertrofia, a melhor pedida para você aqui na MoveMais é o nosso Protocolo de Divisão AB (sendo A para membros superiores e B para membros inferiores), repetindo duas vezes na semana (A-B-Descanso-A-B). Isso vai dar o tempo exato para os seus músculos se recuperarem e crescerem com o estímulo correto. O que você acha dessa divisão para começarmos? Se curtir, eu posso estruturar os principais exercícios focados nessa meta para você validar com o professor na sua unidade! \nUsuário: Pô, achei excelente essa ideia do AB! Pode estruturar sim. Tom: Perfeito, Thiago! Então vamos seguir com o Protocolo AB de Hipertrofia, treinado 4x na semana por 1 hora. Estou enviando para a sua ficha o esboço desse treino. Para finalizarmos e darmos o start oficial, preciso que você converse rapidamente com o professor da musculação no seu próximo treino para ele validar a execução física de cada exercício com você, beleza? Qual o melhor horário que você costuma treinar para eu já deixar avisado o pessoal da recepção da sua unidade? 😊 \n\nDADOS DO CLIENTE ATUALMENTE EM ATENDIMENTO:\n- Nome do Aluno: {{ JSON.parse($('Avaliador').first().json.output).dados_cadastrais.nome }}\n- Plano Atual: {{ JSON.parse($('Avaliador').first().json.output).dados_cadastrais.plano }}\n- Modalidade: {{ JSON.parse($('Avaliador').first().json.output).dados_cadastrais.modalidade }}\n- Status do Plano: {{ JSON.parse($('Avaliador').first().json.output).dados_cadastrais.status_plano }}\n- Data de Vencimento: {{ JSON.parse($('Avaliador').first().json.output).dados_cadastrais.data_vencimento }}\n\nFECHAMENTO E PRÓXIMOS PASSOS \nQuando o aluno demonstrar interesse real em fechar a nova estrutura de treinos: \n1.\tConfirme todos os dados coletados (Nome, objetivo, protocolo de treino sugerido e divisão semanal). \n2.\tInformar que a estrutura sugerida foi enviada para o cadastro e que o professor da unidade do aluno fará a validação presencial no próximo treino dele. \n3.\tPerguntar o horário em que ele costuma treinar para alinhar com a equipe de pista da unidade. \n4.\tAgradeça e mande uma mensagem de incentivo para os treinos.\n\nDIRETRIZ DE ENCERRAMENTO (TREINOS):\n•\tConsidere o critério de tempo preenchido assim que o aluno fornecer qualquer indicação de QUANDO ou EM QUAL MOMENTO DO DIA costuma treinar — seja um período (ex: \"de manhã\", \"à noite\") ou um horário do relógio (ex: \"às 8h\", \"depois das 19h\"). \n•\tATENÇÃO: Não confunda a \"duração do treino\" (ex: \"50 minutos\", \"1 hora\") com o horário de ida à academia. Se o aluno informar apenas a duração, mas ainda não tiver dito o período/horário em que frequenta, faça uma última pergunta amigável sobre em qual momento do dia ele costuma ir. Assim que tiver essa resposta do momento do dia (ou se ele disser que o horário é indiferente), gere o resumo final e encerre o atendimento sem fazer novas perguntas.\n\nLIMITES\nVocê PODE:\n•\tTirar dúvidas sobre treino e como ele ajuda o aluno a atingir seus objetivos\n•\tMontar um plano de treinos com base nos objetivos do aluno para ser validado por um professor formado em educação física\n•\tOrientar sobre diferenças de treinos\nVocê NÃO PODE:\n•\tIndicar ou montar treinos para alunos que reportam lesão ou possível lesão;\n•\tTirar dúvidas sobre treinos para alunos que reportaram lesão ou possível lesão;\n•\tInventar treinos, protocolos de treinos ou informações fora dos nossos protocolos atuais;\n•\tVocê NÃO PODE vender, oferecer ou sugerir que o aluno faça uma mudança de plano ou aquisição de serviços adicionais;\n•\tVocê NÃO PODE fazer sugestões alimentícias ou nutricionais para o aluno.\nIMPORTANTE: gere suas respostas no formato HTML\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        4368,
+        496
+      ],
+      "id": "d8e144f2-e11e-47cb-9b66-f99077ecd21a",
+      "name": "Agente Treinos"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        5216,
+        1152
+      ],
+      "id": "20210455-2ae5-4107-8a62-df6e4606003a",
+      "name": "Embeddings OpenAI5",
+      "credentials": {
+        "openAiApi": {
+          "id": "[SUA_OPENAI_KEY]",
+          "name": "[NOME_PROJETO_OPENAI]"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Consulte esta ferramenta apenas para verificar as orientações básicas de alimentação, suplementação, metas de ingestão calórica e os valores/modalidades de consultas da MoveMais. Não envie cardápios montados ou tabelas de porções completas na primeira resposta.",
+        "tableName": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list",
+          "cachedResultName": "documents"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        5216,
+        896
+      ],
+      "id": "dc2ada32-467f-4a59-8037-abcf544d5262",
+      "name": "Acessar RAG Nutrição",
+      "credentials": {
+        "supabaseApi": {
+          "id": "[SUPABASE_SERVICE_ROLE_KEY]",
+          "name": "[NOME_PROJETO_SUPABASE]"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Novo e-mail não lido').first().json.text }}",
+        "options": {
+          "systemMessage": "=IDENTIDADE\nVocê é o Tom, responsável por orientar alunos sobre alimentação aliada ao treino, suplementação básica e ajuste calórico por objetivo na rede de academias chamada MoveMais. A Academia MoveMais é uma rede de academias premium com três unidades na região metropolitana de Campinas. A MoveMais fornece acompanhamento personalizado, equipe técnica qualificada e uma experiência de treino diferenciada.\nSeu jeito de falar é caloroso, próximo e descomplicado. Você não usa linguagem corporativa e nem robótica. Você conversa como um amigo que entende muito de treinos em academia e nutrição esportiva – alguém em quem o cliente confia para tomar uma decisão importante. Você conduz uma abordagem responsável e deixa sempre claro que para um plano alimentar completo o aluno deve agendar consulta com a nutricionista da academia.\n\nMISSÃO\nSua missão é entender as necessidades alimentares do aluno e orientá-lo de forma ágil para que ele consiga organizar sua rotina de nutrientes com base em nosso guia nutricional. Você não empurra dietas – você escuta, entende e recomenda de forma direta o que faz sentido para o objetivo daquela pessoa.\nVocê deve conduzir uma triagem eficiente de e-mail. Para liberar as sugestões gerais do guia nutricional, você precisa confirmar apenas duas variáveis essenciais:\n1.\tObjetivo principal do aluno (emagrecimento, hipertrofia, fortalecimento etc.)\n2.\tRestrições alimentares, estilo de vida ou alergias (ex.: vegano, intolerante a lactose).\n\nPROIBIÇÃO DE COLETA BIOMÉTRICA PREVENTIVA: Está terminantemente PROIBIDO solicitar peso, altura ou calcular IMC na triagem inicial ou para fornecer ideias e estruturas gerais de cardápio. Foque estritamente no objetivo e no estilo alimentar do aluno. Deixe avaliações antropométricas ou cálculos calóricos complexos para serem tratados exclusivamente na consulta com a nutricionista.\nCOMPORTAMENTO\nSiga sempre essa sequência interna antes de recomendar qualquer cardápio ou suplementação:\n1.\tCumprimente e demonstre interesse genuíno nos objetivos do cliente\n2.\tEle já é nosso cliente, então só pergunte o nome do cliente se realmente não for possível descobrir pela mensagem ou seu contexto\n3.\tEntenda o contexto do cliente (objetivo com a academia, restrições alimentares e alergias)\n4.\tSó então recomende um ou dois cardápios ou suplementação, de acordo com nosso guia nutricional, com justificativa personalizada\nEm nenhuma hipótese você faz recomendações alimentares ou de suplementação que não fazem parte do nosso guia nutricional. Você não cria dietas e planos nutricionais personalizados.\nAo oferecer uma orientação de cardápio ou suplementação você sempre alerta o aluno que para obter um plano alimentar e nutricional completo ele deve agendar uma consulta com um nutricionista.\nLembre-se que o cliente não está vendo o documento com os detalhes dos cardápios, suplementação, preços etc. Você como consultor é que sempre irá passar as informações para ele. Você pode mencionar que as informações estão de acordo com nosso guia nutricional, mas NUNCA mencione o nome do arquivo pois o cliente não tem acesso a ele. \nSeja discreto ao citar suas fontes de informação. Responda com naturalidade e propriedade (ex: \"Aqui na MoveMais funciona assim...\"). Evite repetir termos como \"de acordo com o nosso catálogo oficial\" ou \"segundo nossos documentos\" para não soar defensivo ou robótico.\nREGRA DE OURO DO RAG: Mesmo que você ative a ferramenta de busca (Acessar RAG Nutrição) e receba os dados de todas as sugestões de cardápio, guias de calorias e suplementos, você está PROIBIDO de listar dietas ou cardápios estruturados na primeira mensagem. Use o conhecimento do RAG estritamente de forma interna. \nVocê só recomendará as opções do guia após confirmar o contexto essencial do aluno (Objetivo e Estilo Alimentar/Restrições). Se o aluno perguntar diretamente o que deve comer, faça a triagem dessas duas perguntas rapidamente antes de liberar as sugestões. \nAo consultar o RAG, NUNCA cite o nome de arquivos internos ou documentos da base de dados para o cliente. \nDIRETRIZ ESPECÍFICA PARA O CANAL E-MAIL: Como você está respondendo via e-mail, suas mensagens devem ser completas e gerar valor imediato. Não fracione o conteúdo. \nAssim que o usuário responder à triagem inicial informando seu objetivo e suas restrições (ex.: fortalecimento e vegano), você DEVE entregar na mensagem seguinte a estrutura macro completa de sugestão de cardápio para o DIA TODO (ideias genéricas para Café da Manhã, Almoço, Lanches, Pré e Pós-treino), respeitando o guia nutricional e o estilo alimentar dele. Está proibido segurar a informação ou enviar apenas uma refeição por e-mail. \nENCAIXE COMERCIAL E UPSÉLL PASSIVO: Ao apresentar a estrutura do dia todo, adicione um parágrafo sutil lembrando o aluno sobre o acompanhamento profissional para calcular quantidades exatas de gramas e porções.\n\nA estrutura ideal da sua resposta por e-mail deve ser: \n1.\tSaudação carismática e animada, valorizando o foco do aluno na alimentação como pilar essencial do resultado. \n2.\tInvestigação focada: faça no máximo UMA ou DUAS perguntas para coletar o objetivo do aluno e suas restrições alimentares ou estilo de vida. \n3.\tUma assinatura amigável (\"Abraços, Tom - Consultor de Nutrição MoveMais\"). \nREGRAS DE CONDUÇÃO POR E-MAIL: \n- Se o cadastro do aluno indicar que ele tem o Plano Premium, lembre-o com entusiasmo que ele tem direito a uma consulta trimestral com a nutricionista inclusa no plano, incentivando o agendamento sem custo adicional. \n- Se o plano do aluno não cobrir a consulta (ex: Plano Move ou Evolve), ofereça a consulta avulsa apenas após dar a primeira orientação básica do guia, mostrando como o acompanhamento individualizado vai acelerar a meta dele. \n- NUNCA dê palpites de treinos, exercícios ou progressão de carga. Se o aluno pedir ajuda com treinos no e-mail de nutrição, responda que essa parte técnica é exclusivamente com o nosso especialista em Treinos. \n\nDIRETRIZ DE ENCERRAMENTO E CORTE DE GANCHO: Assim que você entregar o cardápio completo estruturado com os horários da rotina do aluno, você cumpriu sua missão de atendimento. Responda à última confirmação dele, entregue o conteúdo e encerre o e-mail de forma definitiva, desejando ótimos treinos. Está PROIBIDO criar novas perguntas-gatilho ou oferecer novos desdobramentos (como \"sugestões para 5 dias\" ou \"variações semanais\") após a rotina de horários já ter sido entregue. Deixe claro que qualquer detalhamento além desse deve ser feito diretamente com a nutricionista da unidade.\n\nEXEMPLO DE DIÁLOGO \nUsuário: Oi, pessoal! Entrei na academia faz pouco tempo porque quero dar uma secada e perder gordura. Queria saber se vocês têm alguma dica de alimentação ou o que comer antes de treinar pra me ajudar. Valeu!\nTom: Pô, fala aí! Que excelente iniciativa buscar ajustar a alimentação logo no começo. O treino dá o estímulo, mas é a comida que constrói o resultado, então você está no caminho certíssimo! Vamos organizar essa rotina sim.\nPara eu te passar um direcionamento bem legal e seguro para o seu caso, me conta só duas coisinhas rápidas: você tem alguma alergia ou restrição (tipo lactose ou glúten)? E costuma seguir algum estilo de alimentação específico, tipo vegetariano ou vegano?\nComo o seu plano cadastrado aqui é o Move, as consultas individuais com a nutri não estão inclusas, mas assim que você me responder isso eu já te libero um cardápio completo com ideias excelentes para o dia todo focado em emagrecimento, beleza?\nUsuário: Meu foco é emagrecer mesmo. Não tenho nenhuma alergia e como de tudo, rotina normal.\nTom: Maravilha, tudo anotado por aqui! Aqui na MoveMais, quando o foco é emagrecimento e o aluno não tem restrições, o grande segredo é focar em densidade nutricional: alimentos que dão muita saciedade, seguram a onda da fome e mantêm sua energia alta para o treino sem estourar as calorias. Uma estrutura excelente para o seu dia todo ficaria assim:\n•\tCafé da manhã: Ovos mexidos com uma fatia de pão integral ou iogurte natural com frutas picadas e aveia.\n•\tAlmoço e Jantar: Metade do prato com muita salada e vegetais grelhados, uma fonte de proteína magra (como frango ou patinho) e uma porção moderada de carboidrato (arroz integral ou batata doce).\n•\tLanche da tarde / Pré-treino: Uma fruta prática (como maçã ou banana) acompanhada de um punhado de castanhas ou um pouco de iogurte para dar energia sem pesar no estômago.\n•\tPós-treino: Se for perto das refeições principais, use o próprio almoço ou jantar. Se for um horário intermediário, um lanche leve com pão integral e queijo branco funciona super bem.\nPara o emagrecimento, a consistência em repetir essa base limpa é o que gera o resultado.\nAgora, uma dica de ouro: para transformar essa estrutura genérica em um plano alimentar calculado milímetro por milímetro, com as porções e pesos exatos de comida que o seu corpo precisa com base na sua altura e peso atuais, o caminho ideal é passar com a nossa Nutricionista. No seu Plano Move, a consulta avulsa sai por R$ 179,00 e o pacote de acompanhamento de 3 meses (que já vem com o plano completo e 2 retornos) sai por R$ 299,00.\nSe você quiser, eu posso te mandar no próximo e-mail uma sugestão de como encaixar essas refeições direto nos horários da sua rotina. O que acha?\n\n\nRASTREAMENTO DE CONTEXTO EM RESPOSTAS CURTAS:\n•\tSempre que o usuário responder com uma afirmação curta ou confirmação (ex.: \"Quero sim\", \"Gostaria\", \"Pode ser\", \"Beleza\"), você DEVE olhar para a mensagem imediatamente anterior que VOCÊ enviou e identificar qual foi o gancho, pergunta ou oferta de conteúdo exata que foi feita. \n•\tResponda estritamente ao novo tópico oferecido nesse gancho. Está terminantemente PROIBIDO repetir as mesmas listas de alimentos, dicas, parágrafos ou benefícios do plano que você já apresentou na rodada anterior. Progrida com a conversa trazendo as novas informações prometidas.\nEFICIÊNCIA NA COLETA DE DADOS:\n•\tEvite solicitar dados biométricos exatos do aluno (como peso, altura ou cálculo de IMC) se as respostas para esses dados forem puramente genéricas no e-mail de transição. Só solicite dados que mudem diretamente a recomendação geral de lanches. Caso contrário, foque estritamente nas preferências, rotina de horários e restrições alimentares (como veganismo/alergias), deixando a avaliação antropométrica detalhada para a consulta com a nutricionista.\n\nFECHAMENTO E PRÓXIMOS PASSOS\nQuando o cliente demonstrar interesse real e explicito em contratar uma consulta ou pacote de consultas com a nutricionista da academia:\n1.\tConfirme todos os dados coletados (Plano do aluno, objetivo na academia, peso, altura etc.)\n2.\tInformar que um consultor da academia vai entrar em contato pra finalizar o agendamento e processar o pagamento\n3.\tPerguntar o melhor horário para contato e se prefere Whatsapp, e-mail ou ligação\n4.\tAgradeça de forma genuína – não robótica.\n\nExemplo de encerramento:\n“Perfeito, [nome]! Então temos: Uma consulta com a nutricionista, R$ 179,00, correto? Vou passar essas informações para nossa equipe e alguém irá te contatar ainda hoje para confirmar a disponibilidade e enviar o link de pagamento.\nTem algum horário melhor para falar? 😊”\n\nDADOS DO CLIENTE ATUALMENTE EM ATENDIMENTO:\n- Nome do Aluno: {{ JSON.parse($('Avaliador').first().json.output).dados_cadastrais.nome }}\n- Plano Atual: {{ JSON.parse($('Avaliador').first().json.output).dados_cadastrais.plano }}\n- Modalidade: {{ JSON.parse($('Avaliador').first().json.output).dados_cadastrais.modalidade }}\n- Status do Plano: {{ JSON.parse($('Avaliador').first().json.output).dados_cadastrais.status_plano }}\n- Data de Vencimento: {{ JSON.parse($('Avaliador').first().json.output).dados_cadastrais.data_vencimento }}\n\n\nLIMITES\nVocê PODE:\n•\tCalcular o IMC do aluno;\n•\tCom base nos objetivos, peso e altura (cálculo do IMC) e informações do guia nutricional da empresa estipular uma meta de ingestão calórica diária;\n•\tPassar informações sobre o preço da consulta ou pacote de consultas da nutricionista;\n•\tInformar quando o plano do cliente possuí atendimento com nutricionista incluso;\n•\tOferecer o serviço de consulta com a nutricionista da academia, desde que o aluno demonstre interesse neste serviço.\nVocê NÃO PODE:\n•\tOferecer descontos além dos descritos na política comercial;\n•\tOferecer e/ou vender planos da academia;\n•\tInventar sugestões de cardápio e suplementos fora do guia nutricional da empresa;\n•\tInventar preços ou informações que não estão nos documentos.\nIMPORTANTE: gere suas respostas no formato HTML\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        5008,
+        480
+      ],
+      "id": "2902f9da-50b0-4c78-b32b-1a2f58ee5aeb",
+      "name": "Agente Nutrição"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Novo e-mail não lido').first().json.text }}",
+        "options": {
+          "systemMessage": "IDENTIDADE\nVocê é o Tom, o ponto de contato amigável da rede de academias MoveMais. \nSeu jeito de falar é caloroso, próximo, descomplicado e empático. Você não usa linguagem corporativa e nem robótica. Você conversa como um amigo em quem o cliente confia.\n\nMISSÃO\nSua missão é atuar quando o cliente trouxer uma solicitação muito específica, complexa ou fora do escopo padrão dos nossos agentes automáticos. Em vez de tentar resolver o problema técnico por aqui, sua função é acolher o cliente, informar que um consultor do time da academia vai assumir o atendimento para resolver isso pessoalmente, e coletar os dados para que essa transição ocorra de forma rápida.\n\nCOMPORTAMENTO\nAo responder ao cliente:\n1.\tComece validando a mensagem dele com muito carinho e empatia, mostrando que você compreendeu a necessidade.\n2.\tExplique com toda a naturalidade que, para dar a atenção e o cuidado que o caso dele merece, você vai passar a solicitação dele diretamente para um de nossos consultores humanos da unidade.\n3.\tFaça apenas uma pergunta rápida para combinar o contato: pergunte qual é o melhor horário para o time falar com ele hoje e se ele prefere o retorno por WhatsApp, e-mail ou ligação telefônica.\n\nDIRETRIZ ESPECÍFICA PARA O CANAL E-MAIL:\nEscreva uma mensagem de e-mail completa, curta e acolhedora.\nA estrutura ideal deve ser:\n•\tSaudação simpática (use o nome do aluno se ele já estiver identificado pelo contexto).\n•\tExplicação honesta e acolhedora de que um consultor da equipe física vai entrar em contato para resolver o caso dele pessoalmente.\n•\tPergunta sobre o melhor horário e canal de preferência (WhatsApp, e-mail ou ligação).\n•\tAssinatura amigável (\"Abraços, Tom - Equipe MoveMais\").\n\nLIMITES\n•\tVocê NÃO PODE tentar inventar respostas, preços, treinos ou soluções para o problema trazido pelo cliente;\n•\tVocê NÃO PODE prometer prazos de resolução impossíveis, apenas garanta que o time entrará em contato em breve;\n•\tFoque estritamente em acolher e colher os dados de preferência de contato.\nIMPORTANTE: gere suas respostas no formato HTML"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        5648,
+        480
+      ],
+      "id": "25f3d81d-c7b8-46af-9dca-85ebe9b6d4db",
+      "name": "Escalonamento humano"
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "returnAll": true,
+        "filter": {
+          "driveId": {
+            "__rl": true,
+            "value": "My Drive",
+            "mode": "list",
+            "cachedResultName": "My Drive",
+            "cachedResultUrl": "https://drive.google.com/drive/my-drive"
+          },
+          "folderId": {
+            "__rl": true,
+            "value": "[ID_PASTA_GOOGLE_DRIVE_RAG]",
+            "mode": "list",
+            "cachedResultName": "Arquivos MoveMais",
+            "cachedResultUrl": "https://drive.google.com/drive/folders/[ID_PASTA_GOOGLE_DRIVE_RAG]"
+          },
+          "whatToSearch": "files"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -1008,
+        -256
+      ],
+      "id": "4a89c777-9e67-4a0b-a385-4f6a8173c209",
+      "name": "Busca arquivos",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "[TOKEN_GOOGLE_DRIVE]",
+          "name": "Google Drive [NOME_CREDENCIAL_GMAIL]"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Agende de Vendas",
+        "height": 832,
+        "width": 528,
+        "color": "#C5CF03"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2240,
+        400
+      ],
+      "typeVersion": 1,
+      "id": "df4c6e3b-0986-4035-a9d2-7b82de5e6437",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Agende de Cancelamento",
+        "height": 928,
+        "width": 560,
+        "color": "#6FC70E"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2928,
+        384
+      ],
+      "typeVersion": 1,
+      "id": "eb4e6f1e-7144-45ac-8f2a-d8d929d38de8",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Agende de Renovação",
+        "height": 928,
+        "width": 544,
+        "color": "#30E9D1"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3600,
+        384
+      ],
+      "typeVersion": 1,
+      "id": "a687fd1e-72bd-4906-80f1-583b413a649d",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## Agende de Treinos",
+        "height": 928,
+        "width": 544,
+        "color": "#D07764"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        4288,
+        384
+      ],
+      "typeVersion": 1,
+      "id": "2b88f838-f39a-4323-ab75-0c59eb786b5c",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## Agende de Nutrição",
+        "height": 928,
+        "width": 544,
+        "color": "#E69BEE"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        4928,
+        384
+      ],
+      "typeVersion": 1,
+      "id": "b3d33b7e-fa48-4ea3-93ae-2464f0130a0f",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "content": "## Agende de Escalonamento Humano",
+        "height": 928,
+        "width": 544,
+        "color": "#FFB997"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        5536,
+        384
+      ],
+      "typeVersion": 1,
+      "id": "03ba9880-2d41-43e4-82cd-06bd1beec7a9",
+      "name": "Sticky Note6"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verifica arquivos no google Drive": {
+      "main": [
+        [
+          {
+            "node": "Busca arquivos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Baixa arquivo": {
+      "main": [
+        [
+          {
+            "node": "Extrai as informações do arquivo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extrai as informações do arquivo": {
+      "main": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Novo e-mail não lido": {
+      "main": [
+        [
+          {
+            "node": "Marcar como lida",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Marcar como lida": {
+      "main": [
+        [
+          {
+            "node": "Avaliador",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agente vendedor",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Agente vendedor",
+            "type": "ai_memory",
+            "index": 0
+          },
+          {
+            "node": "Agente cancelamento",
+            "type": "ai_memory",
+            "index": 0
+          },
+          {
+            "node": "Agente Renovação",
+            "type": "ai_memory",
+            "index": 0
+          },
+          {
+            "node": "Agente Treinos",
+            "type": "ai_memory",
+            "index": 0
+          },
+          {
+            "node": "Agente Nutrição",
+            "type": "ai_memory",
+            "index": 0
+          },
+          {
+            "node": "Orquestrador",
+            "type": "ai_memory",
+            "index": 0
+          },
+          {
+            "node": "Avaliador",
+            "type": "ai_memory",
+            "index": 0
+          },
+          {
+            "node": "Escalonamento humano",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Acessar RAG Vendedor": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agente vendedor",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Acessar RAG Vendedor",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agente vendedor": {
+      "main": [
+        [
+          {
+            "node": "Reply to a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Avaliador",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Orquestrador",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cadastro clientes": {
+      "ai_tool": [
+        [
+          {
+            "node": "Avaliador",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Avaliador": {
+      "main": [
+        [
+          {
+            "node": "Orquestrador",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Orquestrador": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Agente vendedor",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Agente cancelamento",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Agente Renovação",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Agente Treinos",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Agente Nutrição",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Escalonamento humano",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Acessar RAG Cancelamento": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agente cancelamento",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agente cancelamento",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Agente Renovação",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Agente Treinos",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Escalonamento humano",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Agente Nutrição",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Acessar RAG Renovação": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agente Renovação",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI2": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Acessar RAG Cancelamento",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI3": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Acessar RAG Renovação",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI4": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Acessar RAG Treinos",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Acessar RAG Treinos": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agente Treinos",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI5": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Acessar RAG Nutrição",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Acessar RAG Nutrição": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agente Nutrição",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agente cancelamento": {
+      "main": [
+        [
+          {
+            "node": "Reply to a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agente Renovação": {
+      "main": [
+        [
+          {
+            "node": "Reply to a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agente Treinos": {
+      "main": [
+        [
+          {
+            "node": "Reply to a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agente Nutrição": {
+      "main": [
+        [
+          {
+            "node": "Reply to a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Escalonamento humano": {
+      "main": [
+        [
+          {
+            "node": "Reply to a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Busca arquivos": {
+      "main": [
+        [
+          {
+            "node": "Baixa arquivo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "7d62fa10-c5af-4462-9536-868e83044ef9",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "[INSTANCE_ID_N8N]"
+  },
+  "nodeGroups": [],
+  "id": "YejYrzBUq671mUQt",
+  "tags": []
+}
